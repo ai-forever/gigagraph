@@ -15,21 +15,21 @@ coverage:
 		--cov-report term-missing:skip-covered
 
 start-postgres:
-	docker compose -f tests/compose-postgres.yml up -V --force-recreate --wait
+	docker compose -f tests/compose-postgres.yml up -V --force-recreate --wait --remove-orphans
 
 stop-postgres:
-	docker compose -f tests/compose-postgres.yml down
+	docker compose -f tests/compose-postgres.yml down -v
+
+TEST_PATH ?= .
 
 test:
-	make start-postgres; \
-	poetry run pytest; \
+	make start-postgres && poetry run pytest $(TEST_PATH); \
 	EXIT_CODE=$$?; \
 	make stop-postgres; \
 	exit $$EXIT_CODE
 
 test_watch:
-	make start-postgres; \
-	poetry run ptw .; \
+	make start-postgres && poetry run ptw . -- --ff -v -x -n auto --dist worksteal --snapshot-update --tb short $(TEST_PATH); \
 	EXIT_CODE=$$?; \
 	make stop-postgres; \
 	exit $$EXIT_CODE

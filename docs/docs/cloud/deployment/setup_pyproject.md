@@ -1,11 +1,11 @@
 # How to Set Up a LangGraph Application for Deployment
 
-A LangGraph application must be configured with a [LangGraph API configuration file](../reference/cli.md#configuration-file) in order to be deployed to LangGraph Cloud (or to be self-hosted). This how-to guide discusses the basic steps to setup a LangGraph application for deployment using `pyproject.toml` to define your package's dependencies. 
+A LangGraph application must be configured with a [LangGraph API configuration file](../reference/cli.md#configuration-file) in order to be deployed to LangGraph Cloud (or to be self-hosted). This how-to guide discusses the basic steps to setup a LangGraph application for deployment using `pyproject.toml` to define your package's dependencies.
 
-This walkthrough is based on [this repository](https://github.com/langchain-ai/langgraph-example), which you can play around with to learn more about how to setup your LangGraph application for deployment.
+This walkthrough is based on [this repository](https://github.com/langchain-ai/langgraph-example-pyproject), which you can play around with to learn more about how to setup your LangGraph application for deployment.
 
 !!! tip "Setup with requirements.txt"
-  If you prefer using `requirements.txt` for dependency management, check out [this how-to guide](./setup.md).
+    If you prefer using `requirements.txt` for dependency management, check out [this how-to guide](./setup.md).
 
 !!! tip "Setup with a Monorepo"
     If you are interested in deploying a graph located inside a monorepo, take a look at [this](https://github.com/langchain-ai/langgraph-example-monorepo) repository for an example of how to do so.
@@ -34,10 +34,11 @@ After each step, an example file directory is provided to demonstrate how code c
 Dependencies can optionally be specified in one of the following files: `pyproject.toml`, `setup.py`, or `requirements.txt`. If none of these files is created, then dependencies can be specified later in the [LangGraph API configuration file](#create-langgraph-api-config).
 
 The dependencies below will be included in the image, you can also use them in your code, as long as with a compatible version range:
+
 ```
-langgraph>=0.2.7,<0.3.0
-langgraph-checkpoint>=1.0.4
-langchain-core>=0.2.27,<0.3.0
+langgraph>=0.2.18,<0.3.0
+langgraph-checkpoint>=1.0.9
+langchain-core>=0.2.38,<0.4.0
 langsmith>=0.1.63
 orjson>=3.9.7
 httpx>=0.25.0
@@ -48,8 +49,8 @@ uvloop>=0.18.0
 httptools>=0.5.0
 jsonschema-rs>=0.16.3
 croniter>=1.0.1
-structlog>=24.4.0
-redis>=5.0.8,<6.0.0
+structlog>=23.1.0
+redis>=5.0.0,<6.0.0
 ```
 
 Example `pyproject.toml` file:

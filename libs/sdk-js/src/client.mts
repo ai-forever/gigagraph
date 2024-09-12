@@ -133,6 +133,7 @@ export class CronsClient extends BaseClient {
       interrupt_before: payload?.interruptBefore,
       interrupt_after: payload?.interruptAfter,
       webhook: payload?.webhook,
+      multitask_strategy: payload?.multitaskStrategy,
     };
     return this.fetch<Run>(`/threads/${threadId}/runs/crons`, {
       method: "POST",
@@ -159,6 +160,7 @@ export class CronsClient extends BaseClient {
       interrupt_before: payload?.interruptBefore,
       interrupt_after: payload?.interruptAfter,
       webhook: payload?.webhook,
+      multitask_strategy: payload?.multitaskStrategy,
     };
     return this.fetch<Run>(`/runs/crons`, {
       method: "POST",
@@ -237,6 +239,8 @@ export class AssistantsClient extends BaseClient {
     graphId: string;
     config?: Config;
     metadata?: Metadata;
+    assistantId?: string;
+    ifExists?: OnConflictBehavior;
   }): Promise<Assistant> {
     return this.fetch<Assistant>("/assistants", {
       method: "POST",
@@ -244,6 +248,8 @@ export class AssistantsClient extends BaseClient {
         graph_id: payload.graphId,
         config: payload.config,
         metadata: payload.metadata,
+        assistant_id: payload.assistantId,
+        if_exists: payload.ifExists,
       },
     });
   }
@@ -257,7 +263,7 @@ export class AssistantsClient extends BaseClient {
   async update(
     assistantId: string,
     payload: {
-      graphId: string;
+      graphId?: string;
       config?: Config;
       metadata?: Metadata;
     },
@@ -518,7 +524,7 @@ export class RunsClient extends BaseClient {
   stream(
     threadId: null,
     assistantId: string,
-    payload?: Omit<RunsStreamPayload, "multitaskStrategy">,
+    payload?: Omit<RunsStreamPayload, "multitaskStrategy" | "onCompletion">,
   ): AsyncGenerator<{
     event: StreamEvent;
     data: any;
@@ -546,8 +552,6 @@ export class RunsClient extends BaseClient {
     payload?: RunsStreamPayload,
   ): AsyncGenerator<{
     event: StreamEvent;
-    // TODO: figure out a better way to
-    // type this without any
     data: any;
   }> {
     const json: Record<string, any> = {
@@ -560,10 +564,11 @@ export class RunsClient extends BaseClient {
       interrupt_before: payload?.interruptBefore,
       interrupt_after: payload?.interruptAfter,
       checkpoint_id: payload?.checkpointId,
+      webhook: payload?.webhook,
+      multitask_strategy: payload?.multitaskStrategy,
+      on_completion: payload?.onCompletion,
+      on_disconnect: payload?.onDisconnect,
     };
-    if (payload?.multitaskStrategy != null) {
-      json["multitask_strategy"] = payload?.multitaskStrategy;
-    }
 
     const endpoint =
       threadId == null ? `/runs/stream` : `/threads/${threadId}/runs/stream`;
@@ -640,10 +645,8 @@ export class RunsClient extends BaseClient {
       interrupt_after: payload?.interruptAfter,
       webhook: payload?.webhook,
       checkpoint_id: payload?.checkpointId,
+      multitask_strategy: payload?.multitaskStrategy,
     };
-    if (payload?.multitaskStrategy != null) {
-      json["multitask_strategy"] = payload?.multitaskStrategy;
-    }
     return this.fetch<Run>(`/threads/${threadId}/runs`, {
       method: "POST",
       json,
@@ -651,10 +654,33 @@ export class RunsClient extends BaseClient {
     });
   }
 
+  /**
+   * Create a batch of stateless background runs.
+   *
+   * @param payloads An array of payloads for creating runs.
+   * @returns An array of created runs.
+   */
+  async createBatch(
+    payloads: (RunsCreatePayload & { assistantId: string })[],
+  ): Promise<Run[]> {
+    const filteredPayloads = payloads
+      .map((payload) => ({ ...payload, assistant_id: payload.assistantId }))
+      .map((payload) => {
+        return Object.fromEntries(
+          Object.entries(payload).filter(([_, v]) => v !== undefined),
+        );
+      });
+
+    return this.fetch<Run[]>("/runs/batch", {
+      method: "POST",
+      json: filteredPayloads,
+    });
+  }
+
   async wait(
     threadId: null,
     assistantId: string,
-    payload?: Omit<RunsWaitPayload, "multitaskStrategy">,
+    payload?: Omit<RunsWaitPayload, "multitaskStrategy" | "onCompletion">,
   ): Promise<ThreadState["values"]>;
 
   async wait(
@@ -684,10 +710,11 @@ export class RunsClient extends BaseClient {
       interrupt_before: payload?.interruptBefore,
       interrupt_after: payload?.interruptAfter,
       checkpoint_id: payload?.checkpointId,
+      webhook: payload?.webhook,
+      multitask_strategy: payload?.multitaskStrategy,
+      on_completion: payload?.onCompletion,
+      on_disconnect: payload?.onDisconnect,
     };
-    if (payload?.multitaskStrategy != null) {
-      json["multitask_strategy"] = payload?.multitaskStrategy;
-    }
     const endpoint =
       threadId == null ? `/runs/wait` : `/threads/${threadId}/runs/wait`;
     return this.fetch<ThreadState["values"]>(endpoint, {
@@ -769,6 +796,71 @@ export class RunsClient extends BaseClient {
    */
   async join(threadId: string, runId: string): Promise<void> {
     return this.fetch<void>(`/threads/${threadId}/runs/${runId}/join`);
+  }
+
+  /**
+   * Stream output from a run in real-time, until the run is done.
+   * Output is not buffered, so any output produced before this call will
+   * not be received here.
+   *
+   * @param threadId The ID of the thread.
+   * @param runId The ID of the run.
+   * @param signal An optional abort signal.
+   * @returns An async generator yielding stream parts.
+   */
+  async *joinStream(
+    threadId: string,
+    runId: string,
+    signal?: AbortSignal,
+  ): AsyncGenerator<{ event: StreamEvent; data: any }> {
+    const response = await this.asyncCaller.fetch(
+      ...this.prepareFetchOptions(`/threads/${threadId}/runs/${runId}/stream`, {
+        method: "GET",
+        signal,
+      }),
+    );
+
+    let parser: EventSourceParser;
+    let onEndEvent: () => void;
+    const textDecoder = new TextDecoder();
+
+    const stream: ReadableStream<{ event: string; data: any }> = (
+      response.body || new ReadableStream({ start: (ctrl) => ctrl.close() })
+    ).pipeThrough(
+      new TransformStream({
+        async start(ctrl) {
+          parser = createParser((event) => {
+            if (
+              (signal && signal.aborted) ||
+              (event.type === "event" && event.data === "[DONE]")
+            ) {
+              ctrl.terminate();
+              return;
+            }
+
+            if ("data" in event) {
+              ctrl.enqueue({
+                event: event.event ?? "message",
+                data: JSON.parse(event.data),
+              });
+            }
+          });
+          onEndEvent = () => {
+            ctrl.enqueue({ event: "end", data: undefined });
+          };
+        },
+        async transform(chunk) {
+          const payload = textDecoder.decode(chunk);
+          parser.feed(payload);
+
+          // eventsource-parser will ignore events
+          // that are not terminated by a newline
+          if (payload.trim() === "event: end") onEndEvent();
+        },
+      }),
+    );
+
+    yield* IterableReadableStream.fromReadableStream(stream);
   }
 
   /**

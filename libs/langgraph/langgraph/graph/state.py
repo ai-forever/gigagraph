@@ -17,12 +17,11 @@ from typing import (
     overload,
 )
 
-from langchain_core.pydantic_v1 import BaseModel
 from langchain_core.runnables import Runnable, RunnableConfig
 from langchain_core.runnables.base import RunnableLike
-from langchain_core.runnables.utils import (
-    create_model,
-)
+from langchain_core.runnables.utils import create_model
+from pydantic import BaseModel
+from pydantic.v1 import BaseModel as BaseModelV1
 
 from langgraph.channels.base import BaseChannel
 from langgraph.channels.binop import BinaryOperatorAggregate
@@ -31,20 +30,9 @@ from langgraph.channels.ephemeral_value import EphemeralValue
 from langgraph.channels.last_value import LastValue
 from langgraph.channels.named_barrier_value import NamedBarrierValue
 from langgraph.checkpoint.base import BaseCheckpointSaver
-from langgraph.constants import (
-    CHECKPOINT_NAMESPACE_SEPARATOR,
-    SEND_CHECKPOINT_NAMESPACE_SEPARATOR,
-    TAG_HIDDEN,
-)
+from langgraph.constants import NS_END, NS_SEP, TAG_HIDDEN
 from langgraph.errors import InvalidUpdateError
-from langgraph.graph.graph import (
-    END,
-    START,
-    Branch,
-    CompiledGraph,
-    Graph,
-    Send,
-)
+from langgraph.graph.graph import END, START, Branch, CompiledGraph, Graph, Send
 from langgraph.managed.base import (
     ChannelKeyPlaceholder,
     ChannelTypePlaceholder,
@@ -57,7 +45,8 @@ from langgraph.pregel.read import ChannelRead, PregelNode
 from langgraph.pregel.types import All, RetryPolicy
 from langgraph.pregel.write import SKIP_WRITE, ChannelWrite, ChannelWriteEntry
 from langgraph.store.base import BaseStore
-from langgraph.utils import RunnableCallable, coerce_to_runnable
+from langgraph.utils.fields import get_field_default
+from langgraph.utils.runnable import coerce_to_runnable
 
 logger = logging.getLogger(__name__)
 
@@ -162,8 +151,8 @@ class StateGraph(Graph):
         self.input = input
         self.output = output
         self._add_schema(state_schema)
-        self._add_schema(input)
-        self._add_schema(output)
+        self._add_schema(input, allow_managed=False)
+        self._add_schema(output, allow_managed=False)
         self.config_schema = config_schema
         self.waiting_edges: set[tuple[tuple[str, ...], str]] = set()
 
@@ -173,10 +162,17 @@ class StateGraph(Graph):
             (start, end) for starts, end in self.waiting_edges for start in starts
         }
 
-    def _add_schema(self, schema: Type[Any]) -> None:
+    def _add_schema(self, schema: Type[Any], /, allow_managed: bool = True) -> None:
         if schema not in self.schemas:
             _warn_invalid_state_schema(schema)
             channels, managed = _get_channels(schema)
+            if managed and not allow_managed:
+                names = ", ".join(managed)
+                schema_name = getattr(schema, "__name__", "")
+                raise ValueError(
+                    f"Invalid managed channels detected in {schema_name}: {names}."
+                    " Managed channels are not permitted in Input/Output schema."
+                )
             self.schemas[schema] = {**channels, **managed}
             for key, channel in channels.items():
                 if key in self.channels:
@@ -321,10 +317,7 @@ class StateGraph(Graph):
         if node == END or node == START:
             raise ValueError(f"Node `{node}` is reserved.")
 
-        for character in (
-            CHECKPOINT_NAMESPACE_SEPARATOR,
-            SEND_CHECKPOINT_NAMESPACE_SEPARATOR,
-        ):
+        for character in (NS_SEP, NS_END):
             if character in node:
                 raise ValueError(
                     f"'{character}' is a reserved character and is not allowed in the node names."
@@ -488,40 +481,22 @@ class CompiledStateGraph(CompiledGraph):
     def get_input_schema(
         self, config: Optional[RunnableConfig] = None
     ) -> type[BaseModel]:
-        from pydantic import BaseModel as BaseModelP
-
-        if isclass(self.builder.input) and issubclass(
-            self.builder.input, (BaseModel, BaseModelP)
-        ):
-            return self.builder.input
-        else:
-            keys = list(self.builder.schemas[self.builder.input].keys())
-            if len(keys) == 1 and keys[0] == "__root__":
-                return create_model(  # type: ignore[call-overload]
-                    self.get_name("Input"),
-                    __root__=(self.channels[keys[0]].UpdateType, None),
-                )
-            else:
-                return create_model(  # type: ignore[call-overload]
-                    self.get_name("Input"),
-                    **{
-                        k: (self.channels[k].UpdateType, None)
-                        for k in self.builder.schemas[self.builder.input]
-                        if isinstance(self.channels[k], BaseChannel)
-                    },
-                )
+        return _get_schema(
+            typ=self.builder.input,
+            schemas=self.builder.schemas,
+            channels=self.builder.channels,
+            name=self.get_name("Input"),
+        )
 
     def get_output_schema(
         self, config: Optional[RunnableConfig] = None
     ) -> type[BaseModel]:
-        from pydantic import BaseModel as BaseModelP
-
-        if isclass(self.builder.input) and issubclass(
-            self.builder.output, (BaseModel, BaseModelP)
-        ):
-            return self.builder.output
-
-        return super().get_output_schema(config)
+        return _get_schema(
+            typ=self.builder.output,
+            schemas=self.builder.schemas,
+            channels=self.builder.channels,
+            name=self.get_name("Output"),
+        )
 
     def attach_node(self, key: str, node: Optional[StateNodeSpec]) -> None:
         if key == START:
@@ -537,9 +512,7 @@ class CompiledStateGraph(CompiledGraph):
                 if is_writable_managed_value(v)
             ]
 
-        def _get_state_key(
-            input: Union[None, dict, Any], config: RunnableConfig, *, key: str
-        ) -> Any:
+        def _get_state_key(input: Union[None, dict, Any], *, key: str) -> Any:
             if input is None:
                 return SKIP_WRITE
             elif isinstance(input, dict):
@@ -555,12 +528,7 @@ class CompiledStateGraph(CompiledGraph):
             [ChannelWriteEntry("__root__", skip_none=True)]
             if output_keys == ["__root__"]
             else [
-                ChannelWriteEntry(
-                    key,
-                    mapper=RunnableCallable(
-                        _get_state_key, key=key, trace=False, recurse=False
-                    ),
-                )
+                ChannelWriteEntry(key, mapper=partial(_get_state_key, key=key))
                 for key in output_keys
             ]
         )
@@ -603,7 +571,8 @@ class CompiledStateGraph(CompiledGraph):
                 ],
                 metadata=node.metadata,
                 retry_policy=node.retry_policy,
-            ).pipe(node.runnable)
+                bound=node.runnable,
+            )
 
     def attach_edge(self, starts: Union[str, Sequence[str]], end: str) -> None:
         if isinstance(starts, str):
@@ -633,7 +602,9 @@ class CompiledStateGraph(CompiledGraph):
                 )
 
     def attach_branch(self, start: str, name: str, branch: Branch) -> None:
-        def branch_writer(packets: list[Union[str, Send]]) -> Optional[ChannelWrite]:
+        def branch_writer(
+            packets: list[Union[str, Send]], config: RunnableConfig
+        ) -> Optional[ChannelWrite]:
             if filtered := [p for p in packets if p != END]:
                 writes = [
                     (
@@ -652,7 +623,7 @@ class CompiledStateGraph(CompiledGraph):
                             ),
                         )
                     )
-                return ChannelWrite(writes, tags=[TAG_HIDDEN])
+                ChannelWrite.do_write(config, writes)
 
         # attach branch publisher
         schema = (
@@ -785,3 +756,38 @@ def _is_field_managed_value(name: str, typ: Type[Any]) -> Optional[ManagedValueS
                 return decoration
 
     return None
+
+
+def _get_schema(
+    typ: Type,
+    schemas: dict,
+    channels: dict,
+    name: str,
+) -> type[BaseModel]:
+    if isclass(typ) and issubclass(typ, (BaseModel, BaseModelV1)):
+        return typ
+    else:
+        keys = list(schemas[typ].keys())
+        if len(keys) == 1 and keys[0] == "__root__":
+            return create_model(  # type: ignore[call-overload]
+                name,
+                __root__=(channels[keys[0]].UpdateType, None),
+            )
+        else:
+            return create_model(  # type: ignore[call-overload]
+                name,
+                **{
+                    k: (
+                        channels[k].UpdateType,
+                        (
+                            get_field_default(
+                                k,
+                                channels[k].UpdateType,
+                                typ,
+                            )
+                        ),
+                    )
+                    for k in schemas[typ]
+                    if k in channels and isinstance(channels[k], BaseChannel)
+                },
+            )
