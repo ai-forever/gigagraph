@@ -12,7 +12,7 @@ packages = [
 
 [tool.poetry.dependencies]
 python = ">=3.9.0,<4.0"
-gigachain-core = ">=0.2.38,<0.4"
+gigachain-core = ">=0.2.38post1,<0.4"
 gigagraph-checkpoint = "^1.0.2"
 
 

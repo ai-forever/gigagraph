@@ -1013,13 +1013,13 @@ gigachain-core = ">=0.2.26,<0.3.0"
 
 [[package]]
 name = "gigachain-core"
-version = "0.2.38"
+version = "0.2.38.post1"
 description = "Building applications with LLMs through composability"
 optional = false
 python-versions = "<4.0,>=3.8.1"
 files = [
-    {file = "gigachain_core-0.2.38-py3-none-any.whl", hash = "sha256:3765c97a927fe564eba5d7bb1adf7dad51cc6bfeec04c531b205f36a9de72049"},
-    {file = "gigachain_core-0.2.38.tar.gz", hash = "sha256:fcd72248544e7fce25d059409d259499b5f12c02061cc79c24087fbebeec8439"},
+    {file = "gigachain_core-0.2.38.post1-py3-none-any.whl", hash = "sha256:9121e854575f878e9fa754db66c5a289cb801dc8ea19af29329312d8fcb0ae29"},
+    {file = "gigachain_core-0.2.38.post1.tar.gz", hash = "sha256:3c9c3d833ad6a06a83b805c31238cf1a9bcaf014fa40e10e8f78d45baa18d68d"},
 ]
 
 [package.dependencies]
@@ -4482,4 +4482,4 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9.0,<4.0"
-content-hash = "a4267199d0828b46e1b293184b1b4873f830fa39cdd5126181b2d3be6fb49283"
+content-hash = "c702b796bcc08a2f2b9b910ddc62a21aca2b5fec6d7e7db1935f6ada2a45f841"
