@@ -208,13 +208,13 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "gigachain-core"
-version = "0.2.38"
+version = "0.2.38.post2"
 description = "Building applications with LLMs through composability"
 optional = false
 python-versions = "<4.0,>=3.8.1"
 files = [
-    {file = "gigachain_core-0.2.38-py3-none-any.whl", hash = "sha256:3765c97a927fe564eba5d7bb1adf7dad51cc6bfeec04c531b205f36a9de72049"},
-    {file = "gigachain_core-0.2.38.tar.gz", hash = "sha256:fcd72248544e7fce25d059409d259499b5f12c02061cc79c24087fbebeec8439"},
+    {file = "gigachain_core-0.2.38.post2-py3-none-any.whl", hash = "sha256:ea89e8b662f8ef74e3f93c88699ad7d433e37bcdeb2774986d7e95163129f227"},
+    {file = "gigachain_core-0.2.38.post2.tar.gz", hash = "sha256:523308011afeb969bdfcb4999d6e407eff285d58ad505a763d2b22cafa8507ad"},
 ]
 
 [package.dependencies]
@@ -240,7 +240,7 @@ files = []
 develop = true
 
 [package.dependencies]
-gigachain-core = ">=0.2.38,<0.4"
+gigachain-core = ">=0.2.38post2,<0.4"
 
 [package.source]
 type = "directory"

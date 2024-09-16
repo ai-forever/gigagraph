@@ -954,14 +954,85 @@ python-dateutil = ">=2.8.1"
 dev = ["flake8", "markdown", "twine", "wheel"]
 
 [[package]]
-name = "gigachain-core"
-version = "0.2.38"
+name = "gigachain"
+version = "0.2.16"
 description = "Building applications with LLMs through composability"
 optional = false
 python-versions = "<4.0,>=3.8.1"
 files = [
-    {file = "gigachain_core-0.2.38-py3-none-any.whl", hash = "sha256:3765c97a927fe564eba5d7bb1adf7dad51cc6bfeec04c531b205f36a9de72049"},
-    {file = "gigachain_core-0.2.38.tar.gz", hash = "sha256:fcd72248544e7fce25d059409d259499b5f12c02061cc79c24087fbebeec8439"},
+    {file = "gigachain-0.2.16-py3-none-any.whl", hash = "sha256:f0325374dd73b7a2bdf3b44864651d5ba1a32742dfaac893b1045871982a60ce"},
+    {file = "gigachain-0.2.16.tar.gz", hash = "sha256:b48560762f9c4b015fad90911c38d55a6b8e76d63615f508a2f8d13bd24d440f"},
+]
+
+[package.dependencies]
+aiohttp = ">=3.8.3,<4.0.0"
+async-timeout = {version = ">=4.0.0,<5.0.0", markers = "python_version < \"3.11\""}
+gigachain-core = ">=0.2.38,<0.3.0"
+gigachain-text-splitters = ">=0.2.0,<0.3.0"
+gigachat = ">=0.1.35,<0.2.0"
+langsmith = ">=0.1.17,<0.2.0"
+numpy = [
+    {version = ">=1,<2", markers = "python_version < \"3.12\""},
+    {version = ">=1.26.0,<2.0.0", markers = "python_version >= \"3.12\""},
+]
+pydantic = ">=1,<3"
+PyYAML = ">=5.3"
+requests = ">=2,<3"
+SQLAlchemy = ">=1.4,<3"
+tenacity = ">=8.1.0,<8.4.0 || >8.4.0,<9.0.0"
+
+[[package]]
+name = "gigachain-anthropic"
+version = "0.1.23"
+description = "An integration package connecting AnthropicMessages and LangChain"
+optional = false
+python-versions = "<4.0,>=3.8.1"
+files = [
+    {file = "gigachain_anthropic-0.1.23-py3-none-any.whl", hash = "sha256:a9be99a8817ed266a49e22625f49798e02d2db769d56c406d7195077134a2ace"},
+    {file = "gigachain_anthropic-0.1.23.tar.gz", hash = "sha256:204efb0c3f36baa285dff2d528682587ba7ca85e76feb636ca0a6f972e815800"},
+]
+
+[package.dependencies]
+anthropic = ">=0.30.0,<1"
+defusedxml = ">=0.7.1,<0.8.0"
+gigachain-core = ">=0.2.26,<0.3.0"
+
+[[package]]
+name = "gigachain-community"
+version = "0.2.16.post2"
+description = "Community contributed LangChain integrations."
+optional = false
+python-versions = "<4.0,>=3.8.1"
+files = [
+    {file = "gigachain_community-0.2.16.post2-py3-none-any.whl", hash = "sha256:4601875dddbe537934b8bcf4052ff0f245ad75cb9272fad95031538e9f69ddcf"},
+    {file = "gigachain_community-0.2.16.post2.tar.gz", hash = "sha256:998dea34fe1acc92753031f01411168cd727b4aec3cb25e3c74543d5d84cadf1"},
+]
+
+[package.dependencies]
+aiohttp = ">=3.8.3,<4.0.0"
+dataclasses-json = ">=0.5.7,<0.7"
+gigachain = ">=0.2.16,<0.3.0"
+gigachain-core = ">=0.2.38post2,<0.3.0"
+gigachat = ">=0.1.35"
+langsmith = ">=0.1.112,<0.2.0"
+numpy = [
+    {version = ">=1,<2", markers = "python_version < \"3.12\""},
+    {version = ">=1.26.0,<2.0.0", markers = "python_version >= \"3.12\""},
+]
+PyYAML = ">=5.3"
+requests = ">=2,<3"
+SQLAlchemy = ">=1.4,<3"
+tenacity = ">=8.1.0,<8.4.0 || >8.4.0,<9.0.0"
+
+[[package]]
+name = "gigachain-core"
+version = "0.2.38.post2"
+description = "Building applications with LLMs through composability"
+optional = false
+python-versions = "<4.0,>=3.8.1"
+files = [
+    {file = "gigachain_core-0.2.38.post2-py3-none-any.whl", hash = "sha256:ea89e8b662f8ef74e3f93c88699ad7d433e37bcdeb2774986d7e95163129f227"},
+    {file = "gigachain_core-0.2.38.post2.tar.gz", hash = "sha256:523308011afeb969bdfcb4999d6e407eff285d58ad505a763d2b22cafa8507ad"},
 ]
 
 [package.dependencies]
@@ -978,8 +1049,53 @@ tenacity = ">=8.1.0,<8.4.0 || >8.4.0,<9.0.0"
 typing-extensions = ">=4.7"
 
 [[package]]
+name = "gigachain-openai"
+version = "0.1.22"
+description = "An integration package connecting OpenAI and LangChain"
+optional = false
+python-versions = "<4.0,>=3.8.1"
+files = [
+    {file = "gigachain_openai-0.1.22-py3-none-any.whl", hash = "sha256:d07a896bd61903a7abc0e7542fb8a306e5b077e3381a3df636f0eb0bdc3c8fcf"},
+    {file = "gigachain_openai-0.1.22.tar.gz", hash = "sha256:df72510210497a3d58baf306202054547c337b36c5ec793f72305b4b36b2541f"},
+]
+
+[package.dependencies]
+gigachain-core = ">=0.2.33,<0.3.0"
+openai = ">=1.40.0,<2.0.0"
+tiktoken = ">=0.7,<1"
+
+[[package]]
+name = "gigachain-text-splitters"
+version = "0.2.4"
+description = "LangChain text splitting utilities"
+optional = false
+python-versions = "<4.0,>=3.8.1"
+files = [
+    {file = "gigachain_text_splitters-0.2.4-py3-none-any.whl", hash = "sha256:bfd5b05cef24274dcdfa556479fe6adeb2bd12847f729d4067b89f40caa628d6"},
+    {file = "gigachain_text_splitters-0.2.4.tar.gz", hash = "sha256:8efd4261da8673adc0c2134500ffe7ee155bd8d83f1efdaf461edbd10bc1cfee"},
+]
+
+[package.dependencies]
+gigachain-core = ">=0.2.38,<0.3.0"
+
+[[package]]
+name = "gigachat"
+version = "0.1.35"
+description = "GigaChat. Python-library for GigaChain and LangChain"
+optional = false
+python-versions = "<4.0,>=3.8"
+files = [
+    {file = "gigachat-0.1.35-py3-none-any.whl", hash = "sha256:4e142b1f10807a3655d7c54740103571aca073f2fc91aad2eefbff378121f5a1"},
+    {file = "gigachat-0.1.35.tar.gz", hash = "sha256:508de76d99659c96bb5345d33242095c7b358c453eaa645c5379b06691cfb454"},
+]
+
+[package.dependencies]
+httpx = "<1"
+pydantic = ">=1"
+
+[[package]]
 name = "gigagraph"
-version = "0.2.19"
+version = "0.2.21"
 description = "Building stateful, multi-actor applications with LLMs"
 optional = false
 python-versions = ">=3.9.0,<4.0"
@@ -987,7 +1103,7 @@ files = []
 develop = true
 
 [package.dependencies]
-gigachain-core = ">=0.2.38,<0.4"
+gigachain-core = ">=0.2.38post2,<0.4"
 gigagraph-checkpoint = "^1.0.2"
 
 [package.source]
@@ -1004,7 +1120,7 @@ files = []
 develop = true
 
 [package.dependencies]
-gigachain-core = ">=0.2.38,<0.4"
+gigachain-core = ">=0.2.38post2,<0.4"
 
 [package.source]
 type = "directory"
@@ -1679,213 +1795,29 @@ test-integration = ["ipykernel", "jupyter-server (!=2.11)", "nbconvert", "pytest
 test-ui = ["calysto-bash"]
 
 [[package]]
-name = "langchain"
-version = "0.2.16"
-description = "Building applications with LLMs through composability"
+name = "langfuse"
+version = "2.48.1"
+description = "A client library for accessing langfuse"
 optional = false
 python-versions = "<4.0,>=3.8.1"
 files = [
-    {file = "langchain-0.2.16-py3-none-any.whl", hash = "sha256:8f59ee8b45f268df4b924ea3b9c63e49286efa756d16b3f6a9de5c6e502c36e1"},
-    {file = "langchain-0.2.16.tar.gz", hash = "sha256:ffb426a76a703b73ac69abad77cd16eaf03dda76b42cff55572f592d74944166"},
+    {file = "langfuse-2.48.1-py3-none-any.whl", hash = "sha256:8661070b6d94ba1d7da92c054f3110b6ecf4489d6e8204a4080f934f3f49ebf2"},
+    {file = "langfuse-2.48.1.tar.gz", hash = "sha256:b8117d90babec6be1bc3303b42e0b71848531eae44118e6e0123d03e7961d0fc"},
 ]
 
 [package.dependencies]
-aiohttp = ">=3.8.3,<4.0.0"
-async-timeout = {version = ">=4.0.0,<5.0.0", markers = "python_version < \"3.11\""}
-langchain-core = ">=0.2.38,<0.3.0"
-langchain-text-splitters = ">=0.2.0,<0.3.0"
-langsmith = ">=0.1.17,<0.2.0"
-numpy = [
-    {version = ">=1,<2", markers = "python_version < \"3.12\""},
-    {version = ">=1.26.0,<2.0.0", markers = "python_version >= \"3.12\""},
-]
-pydantic = ">=1,<3"
-PyYAML = ">=5.3"
-requests = ">=2,<3"
-SQLAlchemy = ">=1.4,<3"
-tenacity = ">=8.1.0,<8.4.0 || >8.4.0,<9.0.0"
+anyio = ">=4.4.0,<5.0.0"
+backoff = ">=1.10.0"
+httpx = ">=0.15.4,<1.0"
+idna = ">=3.7,<4.0"
+packaging = ">=23.2,<25.0"
+pydantic = ">=1.10.7,<3.0"
+wrapt = ">=1.14,<2.0"
 
-[[package]]
-name = "langchain-anthropic"
-version = "0.1.23"
-description = "An integration package connecting AnthropicMessages and LangChain"
-optional = false
-python-versions = "<4.0,>=3.8.1"
-files = [
-    {file = "langchain_anthropic-0.1.23-py3-none-any.whl", hash = "sha256:89cafdaf4c9e522484b0ca8bafcceb0a5e4ffca89f7c7c9cec1e2ba411208208"},
-    {file = "langchain_anthropic-0.1.23.tar.gz", hash = "sha256:f2ce045bd0ae09d5f11fed4b84a38ce306822b7bcac77232345f40115df66d51"},
-]
-
-[package.dependencies]
-anthropic = ">=0.30.0,<1"
-defusedxml = ">=0.7.1,<0.8.0"
-langchain-core = ">=0.2.26,<0.3.0"
-
-[[package]]
-name = "langchain-community"
-version = "0.2.16"
-description = "Community contributed LangChain integrations."
-optional = false
-python-versions = "<4.0,>=3.8.1"
-files = [
-    {file = "langchain_community-0.2.16-py3-none-any.whl", hash = "sha256:115e1419c176091d4e00240cb5a38612a249e70f213516b6cacae61a8794a868"},
-    {file = "langchain_community-0.2.16.tar.gz", hash = "sha256:ab416b793a7aed1fa46ebaffd29993296b02286a99819eabc43be2ea8e41ae78"},
-]
-
-[package.dependencies]
-aiohttp = ">=3.8.3,<4.0.0"
-dataclasses-json = ">=0.5.7,<0.7"
-langchain = ">=0.2.16,<0.3.0"
-langchain-core = ">=0.2.38,<0.3.0"
-langsmith = ">=0.1.0,<0.2.0"
-numpy = [
-    {version = ">=1,<2", markers = "python_version < \"3.12\""},
-    {version = ">=1.26.0,<2.0.0", markers = "python_version >= \"3.12\""},
-]
-PyYAML = ">=5.3"
-requests = ">=2,<3"
-SQLAlchemy = ">=1.4,<3"
-tenacity = ">=8.1.0,<8.4.0 || >8.4.0,<9.0.0"
-
-[[package]]
-name = "langchain-core"
-version = "0.2.39"
-description = "Building applications with LLMs through composability"
-optional = false
-python-versions = "<4.0,>=3.8.1"
-files = [
-    {file = "langchain_core-0.2.39-py3-none-any.whl", hash = "sha256:5a5ad4e1c02d13e7021c026b2c7965069ad71ef67b018274cd52bab56e39143e"},
-    {file = "langchain_core-0.2.39.tar.gz", hash = "sha256:73d7b6f0b0212bc8069c3640d69e8d75faa51097784019ffa5c36c617c04acb0"},
-]
-
-[package.dependencies]
-jsonpatch = ">=1.33,<2.0"
-langsmith = ">=0.1.112,<0.2.0"
-packaging = ">=23.2,<25"
-pydantic = [
-    {version = ">=1,<3", markers = "python_full_version < \"3.12.4\""},
-    {version = ">=2.7.4,<3.0.0", markers = "python_full_version >= \"3.12.4\""},
-]
-PyYAML = ">=5.3"
-tenacity = ">=8.1.0,<8.4.0 || >8.4.0,<9.0.0"
-typing-extensions = ">=4.7"
-
-[[package]]
-name = "langchain-openai"
-version = "0.1.23"
-description = "An integration package connecting OpenAI and LangChain"
-optional = false
-python-versions = "<4.0,>=3.8.1"
-files = [
-    {file = "langchain_openai-0.1.23-py3-none-any.whl", hash = "sha256:8e3d215803e157f26480c6108eb4333629832b1a0e746723060c24f93b8b78f4"},
-    {file = "langchain_openai-0.1.23.tar.gz", hash = "sha256:ed7f16671ea0af177ac5f82d5645a746c5097c56f97b31798e5c07b5c84f0eed"},
-]
-
-[package.dependencies]
-langchain-core = ">=0.2.35,<0.3.0"
-openai = ">=1.40.0,<2.0.0"
-tiktoken = ">=0.7,<1"
-
-[[package]]
-name = "langchain-text-splitters"
-version = "0.2.4"
-description = "LangChain text splitting utilities"
-optional = false
-python-versions = "<4.0,>=3.8.1"
-files = [
-    {file = "langchain_text_splitters-0.2.4-py3-none-any.whl", hash = "sha256:2702dee5b7cbdd595ccbe43b8d38d01a34aa8583f4d6a5a68ad2305ae3e7b645"},
-    {file = "langchain_text_splitters-0.2.4.tar.gz", hash = "sha256:f7daa7a3b0aa8309ce248e2e2b6fc8115be01118d336c7f7f7dfacda0e89bf29"},
-]
-
-[package.dependencies]
-langchain-core = ">=0.2.38,<0.3.0"
-
-[[package]]
-name = "langgraph"
-version = "0.2.19"
-description = "Building stateful, multi-actor applications with LLMs"
-optional = false
-python-versions = ">=3.9.0,<4.0"
-files = []
-develop = true
-
-[package.dependencies]
-langchain-core = ">=0.2.39,<0.4"
-langgraph-checkpoint = "^1.0.2"
-
-[package.source]
-type = "directory"
-url = "libs/langgraph"
-
-[[package]]
-name = "langgraph-checkpoint"
-version = "1.0.9"
-description = "Library with base interfaces for LangGraph checkpoint savers."
-optional = false
-python-versions = "^3.9.0,<4.0"
-files = []
-develop = true
-
-[package.dependencies]
-langchain-core = ">=0.2.38,<0.4"
-
-[package.source]
-type = "directory"
-url = "libs/checkpoint"
-
-[[package]]
-name = "langgraph-checkpoint-postgres"
-version = "1.0.6"
-description = "Library with a Postgres implementation of LangGraph checkpoint saver."
-optional = false
-python-versions = "^3.9.0,<4.0"
-files = []
-develop = true
-
-[package.dependencies]
-langgraph-checkpoint = "^1.0.8"
-orjson = ">=3.10.1"
-psycopg = "^3.0.0"
-psycopg-pool = "^3.0.0"
-
-[package.source]
-type = "directory"
-url = "libs/checkpoint-postgres"
-
-[[package]]
-name = "langgraph-checkpoint-sqlite"
-version = "1.0.3"
-description = "Library with a SQLite implementation of LangGraph checkpoint saver."
-optional = false
-python-versions = "^3.9.0"
-files = []
-develop = true
-
-[package.dependencies]
-aiosqlite = "^0.20.0"
-langgraph-checkpoint = "^1.0.8"
-
-[package.source]
-type = "directory"
-url = "libs/checkpoint-sqlite"
-
-[[package]]
-name = "langgraph-sdk"
-version = "0.1.30"
-description = "SDK for interacting with LangGraph API"
-optional = false
-python-versions = "^3.9.0,<4.0"
-files = []
-develop = true
-
-[package.dependencies]
-httpx = ">=0.25.2"
-httpx-sse = ">=0.4.0"
-orjson = ">=3.10.1"
-
-[package.source]
-type = "directory"
-url = "libs/sdk-py"
+[package.extras]
+langchain = ["langchain (>=0.0.309)"]
+llama-index = ["llama-index (>=0.10.12,<2.0.0)"]
+openai = ["openai (>=0.27.8)"]
 
 [[package]]
 name = "langsmith"
@@ -4657,4 +4589,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "2d62185e818412a324fd64d535506f9de71a6bc4d14c7814ced1498d7723a648"
+content-hash = "838a8766553406d212232b042b8318b0ffca52029f822bce144209acfbec0aac"
