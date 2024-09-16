@@ -13,6 +13,7 @@ python = "^3.10"
 gigagraph = { path = "libs/langgraph/", develop = true }
 gigagraph-checkpoint = { path = "libs/checkpoint/", develop = true }
 gigagraph-checkpoint-sqlite = { path = "libs/checkpoint-sqlite", develop = true }
+gigagraph-checkpoint-postgres = { path = "libs/checkpoint-postgres", develop = true }
 gigagraph-sdk = {path = "libs/sdk-py", develop = true}
 mkdocs = "^1.6.0"
 mkdocstrings = "^0.25.1"
@@ -25,6 +26,23 @@ mkdocs-git-committers-plugin-2 = "^2.3.0"
 mkdocs-material = {extras = ["imaging"], version = "^9.5.27"}
 markdown-include = "^0.8.1"
 markdown-callouts = "^0.4.0"
+mkdocs-exclude = "^1.0.2"
+vcrpy = "^6.0.1"
+click = "^8.1.7"
+
+[tool.poetry.group.test.dependencies]
+gigachain-openai = ">=0.1.20"
+gigachain-anthropic = "^0.1.23"
+numpy = "^1.26.4"
+redis = "^5.0.8"
+pymongo = "^4.8.0"
+motor = "^3.5.1"
+gigachain-community = "^0.2.16post2"
+grandalf = "^0.8"
+pyppeteer = "^2.0.0"
+
+[tool.poetry.group.test]
+optional = true
 
 [build-system]
 requires = ["poetry-core"]

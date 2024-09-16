@@ -16,6 +16,8 @@
 
 LangGraph is inspired by [Pregel](https://research.google/pubs/pub37252/) and [Apache Beam](https://beam.apache.org/). The public interface draws inspiration from [NetworkX](https://networkx.org/documentation/latest/). LangGraph is built by LangChain Inc, the creators of LangChain, but can be used without LangChain.
 
+To learn more about LangGraph, check out our first LangChain Academy course, *Introduction to LangGraph*, available [here](https://academy.langchain.com/courses/intro-to-langgraph).
+
 ### Key Features
 
 - **Cycles and Branching**: Implement loops and conditionals in your apps.
@@ -59,7 +61,7 @@ from langchain_core.messages import HumanMessage
 from langchain_anthropic import ChatAnthropic
 from langchain_core.tools import tool
 from langgraph.checkpoint.memory import MemorySaver
-from langgraph.graph import END, StateGraph, MessagesState
+from langgraph.graph import END, START, StateGraph, MessagesState
 from langgraph.prebuilt import ToolNode
 
 
@@ -107,7 +109,7 @@ workflow.add_node("tools", tool_node)
 
 # Set the entrypoint as `agent`
 # This means that this node is the first one called
-workflow.set_entry_point("agent")
+workflow.add_edge(START, "agent")
 
 # We now add a conditional edge
 workflow.add_conditional_edges(
