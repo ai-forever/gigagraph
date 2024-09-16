@@ -10,6 +10,7 @@ from psycopg.types.json import Jsonb
 from psycopg_pool import AsyncConnectionPool
 
 from langgraph.checkpoint.base import (
+    WRITES_IDX_MAP,
     ChannelVersions,
     Checkpoint,
     CheckpointMetadata,
@@ -56,7 +57,11 @@ class AsyncPostgresSaver(BasePostgresSaver):
     @classmethod
     @asynccontextmanager
     async def from_conn_string(
-        cls, conn_string: str, *, pipeline: bool = False
+        cls,
+        conn_string: str,
+        *,
+        pipeline: bool = False,
+        serde: Optional[SerializerProtocol] = None,
     ) -> AsyncIterator["AsyncPostgresSaver"]:
         """Create a new PostgresSaver instance from a connection string.
 
@@ -72,9 +77,9 @@ class AsyncPostgresSaver(BasePostgresSaver):
         ) as conn:
             if pipeline:
                 async with conn.pipeline() as pipe:
-                    yield AsyncPostgresSaver(conn, pipe)
+                    yield AsyncPostgresSaver(conn=conn, pipe=pipe, serde=serde)
             else:
-                yield AsyncPostgresSaver(conn)
+                yield AsyncPostgresSaver(conn=conn, serde=serde)
 
     async def setup(self) -> None:
         """Set up the checkpoint database asynchronously.
@@ -292,18 +297,21 @@ class AsyncPostgresSaver(BasePostgresSaver):
             writes (Sequence[Tuple[str, Any]]): List of writes to store, each as (channel, value) pair.
             task_id (str): Identifier for the task creating the writes.
         """
+        query = (
+            self.UPSERT_CHECKPOINT_WRITES_SQL
+            if all(w[0] in WRITES_IDX_MAP for w in writes)
+            else self.INSERT_CHECKPOINT_WRITES_SQL
+        )
+        params = await asyncio.to_thread(
+            self._dump_writes,
+            config["configurable"]["thread_id"],
+            config["configurable"]["checkpoint_ns"],
+            config["configurable"]["checkpoint_id"],
+            task_id,
+            writes,
+        )
         async with self._cursor(pipeline=True) as cur:
-            await cur.executemany(
-                self.UPSERT_CHECKPOINT_WRITES_SQL,
-                await asyncio.to_thread(
-                    self._dump_writes,
-                    config["configurable"]["thread_id"],
-                    config["configurable"]["checkpoint_ns"],
-                    config["configurable"]["checkpoint_id"],
-                    task_id,
-                    writes,
-                ),
-            )
+            await cur.executemany(query, params)
 
     @asynccontextmanager
     async def _cursor(self, *, pipeline: bool = False) -> AsyncIterator[AsyncCursor]:

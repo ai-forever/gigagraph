@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "gigagraph"
-version = "0.2.19"
+version = "0.2.21"
 description = "Building stateful, multi-actor applications with LLMs"
 authors = []
 license = "MIT"
@@ -15,7 +15,6 @@ python = ">=3.9.0,<4.0"
 gigachain-core = ">=0.2.38post1,<0.4"
 gigagraph-checkpoint = "^1.0.2"
 
-
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.2"
 pytest-cov = "^4.0.0"
@@ -24,8 +23,6 @@ pytest-mock  = "^3.10.0"
 syrupy = "^4.0.2"
 httpx = "^0.26.0"
 pytest-watcher = "^0.4.1"
-gigachain = ">=0.1.0"
-grandalf = "^0.8"
 mypy = "^1.6.0"
 ruff = "^0.6.2"
 jupyter = "^1.0.0"
@@ -38,6 +35,9 @@ gigagraph-checkpoint = {path = "../checkpoint", develop = true}
 gigagraph-checkpoint-sqlite = {path = "../checkpoint-sqlite", develop = true}
 gigagraph-checkpoint-postgres = {path = "../checkpoint-postgres", develop = true}
 psycopg = {extras = ["binary"], version = ">=3.0.0"}
+uvloop = "^0.20.0"
+pyperf = "^2.7.0"
+py-spy = "^0.3.14"
 
 [tool.ruff]
 lint.select = [ "E", "F", "I" ]
@@ -57,7 +57,6 @@ docstring-code-line-length = "dynamic"
 [tool.mypy]
 ignore_missing_imports = "True"
 disallow_untyped_defs = "True"
-exclude = ["notebooks", "examples", "example_data"]
 
 [tool.coverage.run]
 omit = ["tests/*"]

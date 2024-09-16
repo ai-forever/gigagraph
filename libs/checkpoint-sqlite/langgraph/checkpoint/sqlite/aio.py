@@ -1,4 +1,5 @@
 import asyncio
+import random
 from contextlib import asynccontextmanager
 from typing import (
     Any,
@@ -26,6 +27,7 @@ from langgraph.checkpoint.base import (
     get_checkpoint_id,
 )
 from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
+from langgraph.checkpoint.serde.types import ChannelProtocol
 from langgraph.checkpoint.sqlite.utils import search_where
 
 T = TypeVar("T", bound=callable)
@@ -476,10 +478,15 @@ class AsyncSqliteSaver(BaseCheckpointSaver):
             writes (Sequence[Tuple[str, Any]]): List of writes to store, each as (channel, value) pair.
             task_id (str): Identifier for the task creating the writes.
         """
+        query = (
+            "INSERT OR REPLACE INTO writes (thread_id, checkpoint_ns, checkpoint_id, task_id, idx, channel, type, value) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+            if all(w[0] in WRITES_IDX_MAP for w in writes)
+            else "INSERT OR IGNORE INTO writes (thread_id, checkpoint_ns, checkpoint_id, task_id, idx, channel, type, value) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+        )
         await self.setup()
         async with self.lock, self.conn.cursor() as cur:
             await cur.executemany(
-                "INSERT OR IGNORE INTO writes (thread_id, checkpoint_ns, checkpoint_id, task_id, idx, channel, type, value) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                query,
                 [
                     (
                         str(config["configurable"]["thread_id"]),
@@ -493,3 +500,23 @@ class AsyncSqliteSaver(BaseCheckpointSaver):
                     for idx, (channel, value) in enumerate(writes)
                 ],
             )
+
+    def get_next_version(self, current: Optional[str], channel: ChannelProtocol) -> str:
+        """Generate the next version ID for a channel.
+
+        This method creates a new version identifier for a channel based on its current version.
+
+        Args:
+            current (Optional[str]): The current version identifier of the channel.
+            channel (BaseChannel): The channel being versioned.
+
+        Returns:
+            str: The next version identifier, which is guaranteed to be monotonically increasing.
+        """
+        if current is None:
+            current_v = 0
+        else:
+            current_v = int(current.split(".")[0])
+        next_v = current_v + 1
+        next_h = random.random()
+        return f"{next_v:032}.{next_h:016}"
