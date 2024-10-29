@@ -1,3 +1,21 @@
+## ⚠️ ВАЖНОЕ ОБНОВЛЕНИЕ ⚠️
+
+**🚨 Эта версия GigaGraph устарела.** Рекомендуем как можно скорее перейти на новую схему работы: использовать оригинальную библиотеку LangGraph совместно с пакетом поддержки `langchain_gigachat`. Такой подход обеспечивает совместимость с последними возможностями и улучшениями, предоставляемыми как LangGraph, так и GigaGraph.
+
+🔗 Подробнее про: [langgraph](https://github.com/langchain-ai/langgraph).
+
+🔗 Пакет поддержки GigaChat: [langchain\_gigachat](https://github.com/ai-forever/langchain-gigachat/tree/master/libs/gigachat).
+
+### Новый способ установки
+
+```
+pip install langgraph langchain-gigachat
+```
+
+⚠️ ВАЖНО: Устанавливайте пакеты в **чистом** окружении Python.
+
+---
+
 # GigaGraph
 
 ⚡ Разработка AI-агентов в виде графов ⚡
